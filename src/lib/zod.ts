@@ -1,7 +1,7 @@
 import {Types} from 'mongoose';
 import z from 'zod';
 
-const objectIdSchema = z.custom<Types.ObjectId>(
+export const objectIdSchema = z.custom<Types.ObjectId>(
   (value) => Types.ObjectId.isValid(value),
   { message: 'Invalid ObjectId' },
 );
@@ -65,7 +65,7 @@ export const userSchema = z.object({
     .min(6, 'Minimum 6 characters required in password')
     .max(50, 'Maximum 50 characters allowed in password'),
   friends: z.array(objectIdSchema).default([]),
-  blocked: z.array(objectIdSchema).default([]),
+  blocked: z.array(objectIdSchema).optional(),
 });
 
 export const messageSchema = z.object({

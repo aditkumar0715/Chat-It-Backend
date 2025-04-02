@@ -147,3 +147,241 @@ export const logout = (req: Request, res: Response): void => {
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
+
+export const getMyDetails = async (
+  req: Request & { user?: { id: string } },
+  res: Response,
+): Promise<void> => {
+  try {
+    const currentUserId = req.user?.id;
+
+    // Find user by ID
+    const user: IUser | null = await User.findById(currentUserId).select('-password');
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+      return;
+    }
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: 'fetched user',
+      data: user,
+    });
+  } catch (error) {
+    console.log('Error while getting the user: ', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};
+
+export const addFriend = async (
+  req: Request & { user?: { id: string } },
+  res: Response,
+): Promise<void> => {
+  try {
+    const currentUserId = req.user?.id;
+    const { username } = req.body;
+
+    if (!username) {
+      res.status(400).json({
+        success: false,
+        message: 'username is required',
+      });
+      return;
+    }
+
+    // find current user using currentUserId
+    const currentUser: IUser | null = await User.findById(currentUserId);
+    if (!currentUser) {
+      res.status(400).json({
+        success: false,
+        message: 'current user not found',
+      });
+      return;
+    }
+
+    // Find user using userId
+    const user: IUser | null = await User.findOne({ username });
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'username do not exist',
+      });
+      return;
+    }
+
+    // add current user to other user's friend list
+    const updatedUser = await User.findOneAndUpdate(
+      { username },
+      {
+        $addToSet: { friends: currentUser._id },
+      },
+      { new: true },
+    ).select('-_id username name');
+
+    // Add user to currentUser's friends list
+    const updatedCurrentUser = await User.findByIdAndUpdate(
+      currentUserId,
+      {
+        $addToSet: { friends: user._id },
+      },
+      { new: true },
+    ).select('_id username name friends');
+
+    // success response
+    res.status(200).json({
+      success: true,
+      message: 'Friend added successfully',
+      data: { friend: updatedUser, currentUser: updatedCurrentUser },
+    });
+  } catch (error) {
+    console.log('Error while adding friend: ', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};
+
+export const getAllFriends = async (
+  req: Request & { user?: { id: string } },
+  res: Response,
+): Promise<void> => {
+  try {
+    const currentUserId = req.user?.id;
+
+    // find user by id
+    const user: IUser | null = await User.findById(currentUserId)
+      .populate('friends', {
+        _id: 1,
+        username: 1,
+        name: 1,
+        avatar: 1,
+      })
+      .select('friends -_id');
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+      return;
+    }
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: 'fetched all friends',
+      data: user.friends,
+    });
+  } catch (error) {
+    console.log('Error while getting all friends: ', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};
+
+export const getUserDetails = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username } = req.params;
+    if (!username) {
+      res.status(400).json({
+        success: false,
+        message: 'username is required',
+      });
+      return;
+    }
+    // Find user by username
+
+    const user = await User.findOne({ username }).select(
+      '-password -friends -blocked -updatedAt -__v',
+    );
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+      return;
+    }
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: 'fetched user details',
+      data: user,
+    });
+  } catch (error) {
+    console.log('Error while getting user details: ', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};
+
+export const updateMyDetails = async (
+  req: Request & { user?: { id: string } },
+  res: Response,
+): Promise<void> => {
+  try {
+    const currentUserId = req.user?.id;
+    const { name, age, gender, bio, avatar } = req.body;
+
+    // find user by id and update
+    const updatedUser: IUser | null = await User.findByIdAndUpdate(
+      currentUserId,
+      { name, age, gender, bio, avatar },
+      { new: true, runValidators: true, select: '-password -friends -blocked -__v' },
+    );
+    if (!updatedUser) {
+      res.status(404).json({
+        success: false,
+        message: 'Unable to update User Details',
+      });
+      return;
+    }
+
+    // success response
+    res.status(200).json({
+      success: true,
+      message: 'User details updated successfully',
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.log('Error while updating user details: ', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};
+
+export const deleteMyAccount = async (
+  req: Request & { user?: { id: string } },
+  res: Response,
+): Promise<void> => {
+  try {
+    const currentUserId = req.user?.id;
+
+    // find user by id and delete
+    const deletedUser = await User.findByIdAndDelete(currentUserId);
+    if (!deletedUser) {
+      res.status(404).json({
+        success: false,
+        message: 'Unable to delete User Account',
+      });
+      return;
+    }
+    // Clear the cookie
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production', // Set to true if using HTTPS
+      sameSite: 'strict',
+    });
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: 'User account deleted successfully',
+    });
+  } catch (error) {
+    console.log('Error while deleting user account: ', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};

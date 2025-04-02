@@ -27,7 +27,7 @@ const UserSchema = new Schema<IUser>(
     },
     gender: {
       type: String,
-      enum: ['Male', 'Female', 'Other'],
+      enum: ['male', 'female', 'other'],
     },
     bio: {
       type: String,
