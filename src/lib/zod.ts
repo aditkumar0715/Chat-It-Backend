@@ -1,35 +1,40 @@
-import {Types} from 'mongoose';
+import { Types } from 'mongoose';
 import z from 'zod';
 
-export const objectIdSchema = z.custom<Types.ObjectId>(
-  (value) => Types.ObjectId.isValid(value),
-  { message: 'Invalid ObjectId' },
-);
-
-export const registerSchema = z.object({
-  name: z
-    .string()
-    .min(2, 'Minimum 2 characters required in name')
-    .max(20, 'Maximum 20 characters allowed in name')
-    .trim(),
-  email: z.string().email('Invalid email address').trim().toLowerCase(),
-  username: z
-    .string()
-    .min(2, 'Minimum 2 characters required in username')
-    .max(20, 'Maximum 20 characters allowed in username')
-    .trim()
-    .toLowerCase(),
-  password: z
-    .string()
-    .min(6, 'Minimum 6 characters required in password')
-    .max(50, 'Maximum 50 characters allowed in password'),
-  confirmPassword: z
-    .string()
-    .min(6, 'Minimum 6 characters required in confirm password')
-    .max(50, 'Maximum 50 characters allowed in confirm password'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'password and confirmPassword do not match'
+const objectIdSchema = z.custom<Types.ObjectId>((value) => Types.ObjectId.isValid(value), {
+  message: 'Invalid ObjectId',
 });
+
+export const _idSchema = z.object({
+  id: objectIdSchema,
+});
+
+export const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, 'Minimum 2 characters required in name')
+      .max(20, 'Maximum 20 characters allowed in name')
+      .trim(),
+    email: z.string().email('Invalid email address').trim().toLowerCase(),
+    username: z
+      .string()
+      .min(2, 'Minimum 2 characters required in username')
+      .max(20, 'Maximum 20 characters allowed in username')
+      .trim()
+      .toLowerCase(),
+    password: z
+      .string()
+      .min(6, 'Minimum 6 characters required in password')
+      .max(50, 'Maximum 50 characters allowed in password'),
+    confirmPassword: z
+      .string()
+      .min(6, 'Minimum 6 characters required in confirm password')
+      .max(50, 'Maximum 50 characters allowed in confirm password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'password and confirmPassword do not match',
+  });
 
 export const loginSchema = z.object({
   email: z.string().email('Invalid email address').trim().toLowerCase(),

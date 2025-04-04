@@ -10,8 +10,9 @@ import {
   updateMyDetails,
   deleteMyAccount,
 } from '@/controllers/user.controller';
+import { findOrCreateRoom } from '@/controllers/chatRoom.controller';
 import { validate } from '@/middlewares/validate.middleware';
-import { loginSchema, registerSchema, userSchema } from '@/lib/zod';
+import { loginSchema, registerSchema, _idSchema } from '@/lib/zod';
 import { auth } from '@/middlewares/auth.middleware';
 
 // User Routes
@@ -26,4 +27,10 @@ userRouter.get('/user/:username', auth, getUserDetails);
 userRouter.patch('/update', auth, updateMyDetails);
 userRouter.delete('/deleteAccount', auth, deleteMyAccount);
 
+// Chat Room Routes
+const chatRoomRouter = Router();
+chatRoomRouter.post('/findOrCreate', auth, validate(_idSchema), findOrCreateRoom);
+
+// Exporting all routers
 export { userRouter };
+export { chatRoomRouter };

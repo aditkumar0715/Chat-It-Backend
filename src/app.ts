@@ -5,37 +5,33 @@ import cookieParser from 'cookie-parser';
 import { env } from '@/config/enviroment';
 
 // Import routes
-import {userRouter} from '@/routes/routes';
+import { userRouter } from '@/routes/routes';
+import { chatRoomRouter } from '@/routes/routes';
 
 const app = express();
-
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: env.CLIENT_URL,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: env.CLIENT_URL,
+    credentials: true,
+  }),
+);
 app.use(helmet());
-
 
 // Routes
 
-// user routes
 app.use('/api/v1', userRouter);
-
+app.use('/api/v1/room', chatRoomRouter);
 
 // Health check route
-app.use('/', (req, res) => {
+app.get('/', (_, res) => {
   res.status(200).json({
     success: true,
     messsage: 'Server is ready',
   });
 });
 
-
-
-
 export default app;
-
