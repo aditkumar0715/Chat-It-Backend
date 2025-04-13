@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import z from 'zod';
-import { objectIdSchema, userSchema } from '@/lib/zod';
+import { userSchema } from '@/lib/zod';
 import { messageSchema } from '@/lib/zod';
 import {chatRoomSchema} from '@/lib/zod';
 
