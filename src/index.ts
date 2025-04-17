@@ -3,7 +3,7 @@ import { connectDb } from '@/lib/connectDb';
 import { env } from '@/config/enviroment';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import {initSocket} from '@/socket/index';
+import { initSocket } from '@/socket/index';
 
 const PORT = env.PORT || 5000;
 

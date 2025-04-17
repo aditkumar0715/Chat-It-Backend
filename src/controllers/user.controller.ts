@@ -284,18 +284,24 @@ export const getAllFriends = async (
 
 export const getUserDetails = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username } = req.params;
-    if (!username) {
+    const { userId, username } = req.query;
+    if (!userId && !username) {
       res.status(400).json({
         success: false,
-        message: 'username is required',
+        message: 'Either userId or username is required in the request parameters',
       });
       return;
     }
-    // Find user by username
+    // Find user by username or userId
+    const searchQuery: Record<string, any> = {};
+    if (userId) {
+      searchQuery._id = userId;
+    } else {
+      searchQuery.username = username;
+    }
 
-    const user = await User.findOne({ username }).select(
-      '-password -friends -blocked -updatedAt -__v',
+    const user = await User.findOne(searchQuery).select(
+      '-password -friends -blocked -updatedAt -__v -updatedAt',
     );
     if (!user) {
       res.status(404).json({

@@ -1,6 +1,6 @@
 import { Message } from '@/models/message.model';
-import { ChatRoom } from '@/models/chatRoom.model';
-import { User } from '@/models/user.model';
+// import { ChatRoom } from '@/models/chatRoom.model';
+// import { User } from '@/models/user.model';
 import { Server, Socket } from 'socket.io';
 
 // join room handler
@@ -16,22 +16,24 @@ export const chatMessage = async (
   socket: Socket,
   data: { roomId: string; message: string; senderId: string },
 ) => {
+  if (!data.roomId || !data.message || !data.senderId) {
+    socket.emit('error', { success: false, message: 'Invalid data' });
+    return;
+  }
   console.log(
     `Message from ${data.senderId} in room : ${data.roomId} and message : ${data.message}`,
   );
   try {
     // Store the message in the database
-    const savedMessage = await Message.create(
-      {
-        chatRoom: data.roomId,
-        sender: data.senderId,
-        content: data.message,
-      },
-      { runValidators: true },
-    );
-
+    const savedMessage = await Message.create({
+      chatRoom: data.roomId,
+      sender: data.senderId,
+      content: data.message,
+    });
+    console.log('Saved message is: ', savedMessage);
     if (!savedMessage) {
       socket.emit('error', { success: false, message: 'Error saving message' });
+      return;
     }
 
     // broadcast the message to everyone in the room (including sender)
@@ -48,8 +50,8 @@ export const chatMessage = async (
 export const fetchMessages = async (socket: Socket, data: { roomId: string }) => {
   try {
     const messages = await Message.find({ chatRoom: data.roomId })
-      .populate('sender', 'name avatar') // Populate sender details
-      .sort({ createdAt: -1 })
+      // .populate('sender', 'name avatar') // Populate sender details
+      .sort({ createdAt: 1 })
       .limit(50); // Fetch the last 50 messages
 
     // validate if messages exist
@@ -66,7 +68,7 @@ export const fetchMessages = async (socket: Socket, data: { roomId: string }) =>
 };
 
 // leave room handler
-export const leaveRoom = (socket: Socket, data: { userId:string, roomId: string }) => {
+export const leaveRoom = (socket: Socket, data: { userId: string; roomId: string }) => {
   socket.leave(data.roomId);
   console.log(`User: ${data.userId} left room: ${data.roomId}`);
 };

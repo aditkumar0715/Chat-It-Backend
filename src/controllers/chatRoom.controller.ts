@@ -49,14 +49,13 @@ export const findOrCreateRoom = async (
     }
 
     // return success response
-    res.status(200).json({ success: true, message: 'room created successfully', data: newChatRoom });
+    res
+      .status(200)
+      .json({ success: true, message: 'room created successfully', data: newChatRoom });
     return;
   } catch (error) {
     console.error('Error finding or creating chat room:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Internal server error' });
     return;
   }
 };
-
-
-

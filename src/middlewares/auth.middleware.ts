@@ -13,7 +13,7 @@ export const auth = (
 
     // check if token is present
     if (!token) {
-      res.status(401).json({ success:false, message: 'authorization token not found' });
+      res.status(401).json({ success: false, message: 'authorization token not found' });
       return;
     }
 

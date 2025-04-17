@@ -23,7 +23,7 @@ userRouter.get('/logout', logout);
 userRouter.get('/me', auth, getMyDetails);
 userRouter.patch('/addFriend', auth, addFriend);
 userRouter.get('/allFriends', auth, getAllFriends);
-userRouter.get('/user/:username', auth, getUserDetails);
+userRouter.get('/user', getUserDetails); // get user by id or username
 userRouter.patch('/update', auth, updateMyDetails);
 userRouter.delete('/deleteAccount', auth, deleteMyAccount);
 
